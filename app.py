@@ -153,7 +153,7 @@ def make_request(encrypt, server_name, token):
             url = "https://client.us.freefiremobile.com/GetPlayerPersonalShow"
         else:
             url = "https://clientbp.ggpolarbear.com/GetPlayerPersonalShow"
-            
+
         edata = bytes.fromhex(encrypt)
         headers = {
             'User-Agent': "UnityPlayer/2022.3.47f1 (UnityWebRequest/1.0, libcurl/8.5.0-DEV)",
@@ -166,10 +166,13 @@ def make_request(encrypt, server_name, token):
             'X-GA': "v1 1",
             'ReleaseVersion': "OB54"
         }
-        
+
         response = requests.post(url, data=edata, headers=headers, verify=False, timeout=10)
+
         app.logger.info(f"Garena Response Status Code: {response.status_code}")
-        
+        app.logger.info(f"Content-Type: {response.headers.get('Content-Type')}")
+        app.logger.info(f"Raw response: {response.content[:100].hex()}")
+
         if response.status_code != 200:
             app.logger.error(f"Garena error content: {response.status_code} - {response.text}")
             return None
@@ -177,9 +180,12 @@ def make_request(encrypt, server_name, token):
         hex_data = response.content.hex()
         binary = bytes.fromhex(hex_data)
         decode = decode_protobuf(binary)
+
         if decode is None:
             app.logger.error("Protobuf decoding returned None.")
+
         return decode
+
     except Exception as e:
         app.logger.error(f"Error in make_request: {e}")
         return None
